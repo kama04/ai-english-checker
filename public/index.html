@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI English Checker</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #f4f7fb, #e9eef8);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      width: 100%;
+      max-width: 720px;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+      padding: 24px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+    p {
+      margin: 0 0 18px;
+      color: #555;
+      line-height: 1.5;
+    }
+    textarea {
+      width: 100%;
+      min-height: 180px;
+      border: 1px solid #d7dbe3;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 16px;
+      resize: vertical;
+      outline: none;
+    }
+    textarea:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 15px;
+      cursor: pointer;
+      background: #4f46e5;
+      color: white;
+      font-weight: 600;
+    }
+    button.secondary {
+      background: #eef2ff;
+      color: #312e81;
+    }
+    .output {
+      margin-top: 18px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      white-space: pre-wrap;
+      line-height: 1.55;
+      min-height: 120px;
+    }
+    .status {
+      margin-top: 10px;
+      color: #666;
+      font-size: 14px;
+    }
+    code {
+      background: #eef2ff;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>AI English Checker</h1>
+    <p>
+      Paste your English text and get AI feedback for spelling, grammar, and a corrected version.
+      This page sends text to your own backend route <code>/api/check</code>.
+    </p>
+
+    <textarea id="inputText" placeholder="Example: I goed to the shop and buyed a apple yesterday."></textarea>
+
+    <div class="actions">
+      <button onclick="checkEnglish()">Check with AI</button>
+      <button class="secondary" onclick="fillExample()">Use example</button>
+      <button class="secondary" onclick="clearAll()">Clear</button>
+    </div>
+
+    <div class="status" id="status"></div>
+    <div class="output" id="result">Your result will appear here.</div>
+  </div>
+
+  <script>
+    const input = document.getElementById('inputText');
+    const statusEl = document.getElementById('status');
+    const resultEl = document.getElementById('result');
+
+    function fillExample() {
+      input.value = 'I goed to the shop and buyed a apple yesterday. She do not likes this movie.';
+    }
+
+    function clearAll() {
+      input.value = '';
+      statusEl.textContent = '';
+      resultEl.textContent = 'Your result will appear here.';
+    }
+
+    async function checkEnglish() {
+      const text = input.value.trim();
+
+      if (!text) {
+        statusEl.textContent = 'Please enter some English text first.';
+        return;
+      }
+
+      statusEl.textContent = 'Checking with AI...';
+      resultEl.textContent = '';
+
+      try {
+        const response = await fetch('/api/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Request failed');
+        }
+
+        resultEl.textContent = data.result;
+        statusEl.textContent = 'Done.';
+      } catch (error) {
+        statusEl.textContent = 'Error while checking text.';
+        resultEl.textContent = error.message;
+      }
+    }
+  </script>
+</body>
+</html>
